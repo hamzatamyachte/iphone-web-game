@@ -80,11 +80,29 @@
   .big { font: 900 72px/1 var(--font); }
   .badge { background: var(--gold); color: var(--bg); font: 900 13px/1 var(--font); padding: 7px 14px; border-radius: 99px; }
   .install {
-    position: absolute; bottom: calc(var(--sb) + 18px); left: 16px; right: 16px; display: none;
+    position: absolute; bottom: calc(var(--sb) + 58px); left: 16px; right: 16px; display: none;
     background: rgba(62, 240, 255, 0.1); border: 1px solid rgba(62, 240, 255, 0.35); border-radius: 16px;
     padding: 12px 14px; font: 600 14px/1.4 var(--font); color: var(--text); text-align: center;
   }
   .install.show { display: block; }
+  /* Keep menu content clear of the footer, and of the install tip when it shows. */
+  #menu { padding-bottom: calc(var(--sb) + 44px); }
+  #menu.hasTip { padding-bottom: calc(var(--sb) + 140px); }
+  @media (max-height: 700px) {
+    .hero { width: 104px; height: 104px; }
+    .title { font-size: 50px; }
+    #menu { gap: 10px; }
+  }
+  .footer {
+    position: absolute; bottom: calc(var(--sb) + 14px); left: 0; right: 0; text-align: center;
+    font: 600 11px/1 var(--font); letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim);
+  }
+  .sig {
+    display: inline-block; margin-left: 4px; vertical-align: -4px;
+    font: 400 24px/1 "Snell Roundhand", "Savoye LET", "Brush Script MT", cursive;
+    letter-spacing: 0; text-transform: none; color: var(--text);
+    text-shadow: 0 0 14px rgba(62, 240, 255, 0.55);
+  }
   .install b { color: var(--cyan); }
   .iconBtn {
     width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
@@ -179,6 +197,7 @@
   <button class="btn ghost" id="animalsBtn">ANIMALS</button>
   <p class="sub" id="menuBest"></p>
   <div class="install" id="install">Play it like an app: tap <b>Share</b> &rarr; <b>Add to Home Screen</b>, keep <b>Open as Web App</b> on, then open it from the icon.</div>
+  <div class="footer">Powered by <span class="sig">Hamza Tamyachte</span></div>
 </div>
 
 <div class="screen dim" id="animals">
@@ -210,7 +229,7 @@
     </div>
     <div class="setting"><span>Reset progress</span><button class="btn ghost small danger" id="resetBtn">Reset</button></div>
     <button class="btn" id="settingsDone">DONE</button>
-    <div class="version">Dodge v7</div>
+    <div class="version">Dodge v8</div>
   </div>
 </div>
 
@@ -898,6 +917,7 @@ $('settingsDone').onclick = closeSettings;
 const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches;
 const touchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 $('install').classList.toggle('show', !standalone && touchDevice);
+$('menu').classList.toggle('hasTip', !standalone && touchDevice);
 // Soft click on menu buttons (not the ones that already have their own sound).
 ['animalsBtn', 'backBtn', 'restartBtn', 'pauseHomeBtn', 'overHomeBtn', 'resumeBtn', 'settingsBtn', 'pauseSettingsBtn', 'settingsDone'].forEach(id => $(id).addEventListener('click', sfx.tap));
 

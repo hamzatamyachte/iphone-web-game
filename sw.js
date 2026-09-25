@@ -1,5 +1,5 @@
 // Bump VERSION after changing any file so installed copies pick up the update.
-const VERSION = 'dodge-v7';
+const VERSION = 'dodge-v8';
 const FILES = ['./', 'index.html', 'manifest.json', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png'];
 
 self.addEventListener('install', e => {
