@@ -1,6 +1,6 @@
 // Bump VERSION after changing any file so installed copies pick up the update.
-const VERSION = 'dodge-v11';
-const FILES = ['./', 'index.html', 'manifest.json', 'worlds.js', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png'];
+const VERSION = 'dodge-v12';
+const FILES = ['./', 'index.html', 'manifest.json', 'worlds.js', 'icons/fox-180.png', 'icons/fox-192.png', 'icons/fox-512.png', 'icons/fox-32.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)));

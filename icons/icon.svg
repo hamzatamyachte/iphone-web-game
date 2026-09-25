@@ -1,70 +1,61 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0b0b1a"/>
-      <stop offset="0.55" stop-color="#1a1440"/>
-      <stop offset="1" stop-color="#3a1452"/>
+      <stop offset="0" stop-color="#06110d"/>
+      <stop offset="0.55" stop-color="#0d2a20"/>
+      <stop offset="1" stop-color="#17442f"/>
     </linearGradient>
-    <radialGradient id="horizon" cx="0.5" cy="1.05" r="0.7">
-      <stop offset="0" stop-color="#ff5c8a" stop-opacity="0.55"/>
-      <stop offset="1" stop-color="#ff5c8a" stop-opacity="0"/>
+    <radialGradient id="moonGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#e6ffd8" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#e6ffd8" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="aura" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#3ef0ff" stop-opacity="0.55"/>
-      <stop offset="0.45" stop-color="#3ef0ff" stop-opacity="0.18"/>
-      <stop offset="1" stop-color="#3ef0ff" stop-opacity="0"/>
+      <stop offset="0" stop-color="#b6ff6b" stop-opacity="0.5"/>
+      <stop offset="0.45" stop-color="#b6ff6b" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#b6ff6b" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="fireOrange" cx="0.5" cy="0.75" r="0.6">
-      <stop offset="0" stop-color="#ffd23f" stop-opacity="0.9"/>
-      <stop offset="0.4" stop-color="#ff9a3c" stop-opacity="0.55"/>
-      <stop offset="1" stop-color="#ff5c8a" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="firePurple" cx="0.5" cy="0.75" r="0.6">
-      <stop offset="0" stop-color="#e2c2ff" stop-opacity="0.85"/>
-      <stop offset="0.4" stop-color="#b56cff" stop-opacity="0.5"/>
-      <stop offset="1" stop-color="#b56cff" stop-opacity="0"/>
+    <radialGradient id="firefly" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f4ffd0" stop-opacity="1"/>
+      <stop offset="0.25" stop-color="#d4ff6b" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#d4ff6b" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="coinGlow" cx="0.5" cy="0.5" r="0.5">
       <stop offset="0" stop-color="#ffd23f" stop-opacity="0.6"/>
       <stop offset="1" stop-color="#ffd23f" stop-opacity="0"/>
     </radialGradient>
+    <g id="pine">
+      <path d="M0 -300 L-110 -150 L110 -150Z"/>
+      <path d="M0 -220 L-140 -60 L140 -60Z"/>
+      <path d="M0 -130 L-170 40 L170 40Z"/>
+      <rect x="-18" y="30" width="36" height="80"/>
+    </g>
   </defs>
 
   <rect width="1024" height="1024" fill="url(#sky)"/>
-  <rect width="1024" height="1024" fill="url(#horizon)"/>
 
   <g fill="#fff">
-    <circle cx="120" cy="140" r="5" opacity=".7"/><circle cx="300" cy="90" r="3.5" opacity=".5"/>
-    <circle cx="880" cy="420" r="4" opacity=".6"/><circle cx="90" cy="520" r="3.5" opacity=".5"/>
-    <circle cx="470" cy="190" r="4" opacity=".6"/><circle cx="950" cy="120" r="3" opacity=".5"/>
-    <circle cx="160" cy="820" r="4" opacity=".4"/><circle cx="900" cy="860" r="3.5" opacity=".4"/>
-    <circle cx="600" cy="80" r="3" opacity=".5"/><circle cx="60" cy="330" r="3" opacity=".4"/>
+    <circle cx="110" cy="130" r="4" opacity=".6"/><circle cx="260" cy="70" r="3" opacity=".5"/>
+    <circle cx="420" cy="160" r="3.5" opacity=".5"/><circle cx="560" cy="60" r="3" opacity=".4"/>
+    <circle cx="80" cy="330" r="3" opacity=".4"/><circle cx="330" cy="260" r="2.5" opacity=".4"/>
+    <circle cx="960" cy="330" r="3" opacity=".4"/><circle cx="640" cy="200" r="2.5" opacity=".4"/>
   </g>
 
-  <!-- Meteor, top right, orange -->
-  <ellipse cx="770" cy="150" rx="70" ry="170" fill="url(#fireOrange)" transform="rotate(-28 770 250)"/>
-  <svg x="700" y="220" width="150" height="150" viewBox="0 0 100 100">
-    <g transform="rotate(20 50 50)">
-      <path d="M50 6 L78 14 L94 40 L88 72 L64 94 L32 92 L10 70 L6 38 L24 14Z" fill="#7a5236"/>
-      <path d="M50 6 L78 14 L94 40 L70 30 L40 26 L24 14Z" fill="#9c6c48"/>
-      <circle cx="36" cy="52" r="10" fill="#5c3c26"/><circle cx="64" cy="68" r="7" fill="#5c3c26"/><circle cx="67" cy="42" r="5" fill="#5c3c26"/>
-      <path d="M20 70 L38 64 L46 78 M60 52 L78 58 L84 74" stroke="#ffb13c" stroke-width="4" fill="none" stroke-linecap="round"/>
-    </g>
-  </svg>
+  <!-- Moon -->
+  <circle cx="790" cy="180" r="170" fill="url(#moonGlow)"/>
+  <circle cx="790" cy="180" r="70" fill="#e9f7e0"/>
+  <circle cx="765" cy="160" r="12" fill="#d3e8c8"/><circle cx="815" cy="205" r="8" fill="#d3e8c8"/>
 
-  <!-- Meteor, top left, purple, smaller -->
-  <ellipse cx="215" cy="150" rx="46" ry="120" fill="url(#firePurple)" transform="rotate(24 215 220)"/>
-  <svg x="170" y="215" width="100" height="100" viewBox="0 0 100 100">
-    <g transform="rotate(-15 50 50)">
-      <path d="M50 6 L78 14 L94 40 L88 72 L64 94 L32 92 L10 70 L6 38 L24 14Z" fill="#6b5a8e"/>
-      <path d="M50 6 L78 14 L94 40 L70 30 L40 26 L24 14Z" fill="#8a78b0"/>
-      <circle cx="36" cy="52" r="10" fill="#54457a"/><circle cx="64" cy="68" r="7" fill="#54457a"/><circle cx="67" cy="42" r="5" fill="#54457a"/>
-    </g>
-  </svg>
+  <!-- Back pines -->
+  <g fill="#0f3325">
+    <use href="#pine" transform="translate(60 800) scale(0.9)"/>
+    <use href="#pine" transform="translate(250 760) scale(1.05)"/>
+    <use href="#pine" transform="translate(780 770) scale(1)"/>
+    <use href="#pine" transform="translate(970 800) scale(0.85)"/>
+  </g>
 
   <!-- Fox with aura -->
-  <circle cx="512" cy="620" r="360" fill="url(#aura)"/>
-  <svg x="232" y="330" width="560" height="560" viewBox="0 0 100 100">
+  <circle cx="512" cy="560" r="360" fill="url(#aura)"/>
+  <svg x="237" y="285" width="550" height="550" viewBox="0 0 100 100">
     <path d="M12 10 L42 30 L20 50Z" fill="#f47b20"/><path d="M88 10 L58 30 L80 50Z" fill="#f47b20"/>
     <path d="M18 19 L33 30 L23 41Z" fill="#5a2a10"/><path d="M82 19 L67 30 L77 41Z" fill="#5a2a10"/>
     <ellipse cx="50" cy="56" rx="37" ry="33" fill="#f47b20"/>
@@ -76,11 +67,26 @@
     <path d="M50 75 Q45 81 41 78 M50 75 Q55 81 59 78" stroke="#1b1b2f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
   </svg>
 
+  <!-- Front pines, darker, framing the bottom corners -->
+  <g fill="#07190f">
+    <use href="#pine" transform="translate(40 1010) scale(1.15)"/>
+    <use href="#pine" transform="translate(990 1000) scale(1.2)"/>
+  </g>
+  <rect y="960" width="1024" height="64" fill="#07190f"/>
+
   <!-- Coin -->
-  <circle cx="800" cy="610" r="120" fill="url(#coinGlow)"/>
-  <svg x="730" y="540" width="140" height="140" viewBox="0 0 100 100">
+  <circle cx="820" cy="560" r="110" fill="url(#coinGlow)"/>
+  <svg x="758" y="498" width="124" height="124" viewBox="0 0 100 100">
     <circle cx="50" cy="50" r="46" fill="#d99a00"/><circle cx="50" cy="50" r="38" fill="#ffd23f"/>
     <circle cx="50" cy="50" r="33" fill="none" stroke="#fff3b0" stroke-width="3" stroke-dasharray="3 7" opacity=".8"/>
     <path d="M50 27 L56 43 L73 43 L59 53 L64 70 L50 60 L36 70 L41 53 L27 43 L44 43Z" fill="#fff3b0"/>
   </svg>
+
+  <!-- Fireflies -->
+  <circle cx="190" cy="470" r="34" fill="url(#firefly)"/>
+  <circle cx="300" cy="330" r="24" fill="url(#firefly)"/>
+  <circle cx="700" cy="390" r="28" fill="url(#firefly)"/>
+  <circle cx="150" cy="700" r="22" fill="url(#firefly)"/>
+  <circle cx="880" cy="760" r="30" fill="url(#firefly)"/>
+  <circle cx="620" cy="880" r="20" fill="url(#firefly)"/>
 </svg>
