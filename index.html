@@ -80,28 +80,22 @@
   .big { font: 900 72px/1 var(--font); }
   .badge { background: var(--gold); color: var(--bg); font: 900 13px/1 var(--font); padding: 7px 14px; border-radius: 99px; }
   .install {
-    position: absolute; bottom: calc(var(--sb) + 58px); left: 16px; right: 16px; display: none;
+    position: absolute; bottom: calc(var(--sb) + 36px); left: 16px; right: 16px; display: none;
     background: rgba(62, 240, 255, 0.1); border: 1px solid rgba(62, 240, 255, 0.35); border-radius: 16px;
     padding: 12px 14px; font: 600 14px/1.4 var(--font); color: var(--text); text-align: center;
   }
   .install.show { display: block; }
   /* Keep menu content clear of the footer, and of the install tip when it shows. */
-  #menu { padding-bottom: calc(var(--sb) + 44px); }
-  #menu.hasTip { padding-bottom: calc(var(--sb) + 140px); }
+  #menu { padding-bottom: calc(var(--sb) + 30px); }
+  #menu.hasTip { padding-bottom: calc(var(--sb) + 118px); }
   @media (max-height: 700px) {
     .hero { width: 104px; height: 104px; }
     .title { font-size: 50px; }
     #menu { gap: 10px; }
   }
   .footer {
-    position: absolute; bottom: calc(var(--sb) + 14px); left: 0; right: 0; text-align: center;
-    font: 600 11px/1 var(--font); letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim);
-  }
-  .sig {
-    display: inline-block; margin-left: 4px; vertical-align: -4px;
-    font: 400 24px/1 "Snell Roundhand", "Savoye LET", "Brush Script MT", cursive;
-    letter-spacing: 0; text-transform: none; color: var(--text);
-    text-shadow: 0 0 14px rgba(62, 240, 255, 0.55);
+    position: absolute; bottom: calc(var(--sb) + 10px); right: 14px;
+    font: 500 11px/1 var(--font); color: var(--dim); opacity: 0.8;
   }
   .install b { color: var(--cyan); }
   .iconBtn {
@@ -197,7 +191,7 @@
   <button class="btn ghost" id="animalsBtn">ANIMALS</button>
   <p class="sub" id="menuBest"></p>
   <div class="install" id="install">Play it like an app: tap <b>Share</b> &rarr; <b>Add to Home Screen</b>, keep <b>Open as Web App</b> on, then open it from the icon.</div>
-  <div class="footer">Powered by <span class="sig">Hamza Tamyachte</span></div>
+  <div class="footer">Powered by Hamza Tamyachte</div>
 </div>
 
 <div class="screen dim" id="animals">
@@ -229,7 +223,7 @@
     </div>
     <div class="setting"><span>Reset progress</span><button class="btn ghost small danger" id="resetBtn">Reset</button></div>
     <button class="btn" id="settingsDone">DONE</button>
-    <div class="version">Dodge v8</div>
+    <div class="version">Dodge v10</div>
   </div>
 </div>
 
@@ -328,7 +322,27 @@ function sprite(svgStr, px = 192) {
 }
 ANIMALS.forEach(a => a.sprite = sprite(a.svg));
 METEORS.forEach(m => m.sprite = sprite(m.svg, 160));
-const coinSprite = sprite(COIN_SVG, 96);
+
+// Rare coins: bigger, own color, value printed on the face.
+const coinSvg = (rim, face, shine, value, ink) => svg(
+  `<circle cx='50' cy='50' r='46' fill='${rim}'/><circle cx='50' cy='50' r='38' fill='${face}'/>` +
+  `<circle cx='50' cy='50' r='33' fill='none' stroke='${shine}' stroke-width='3' stroke-dasharray='3 7' opacity='.8'/>` +
+  `<text x='50' y='52' text-anchor='middle' dominant-baseline='middle' font-family='Arial Black, Arial, Helvetica, sans-serif' ` +
+  `font-weight='900' font-size='${value >= 10 ? 36 : 46}' fill='${ink}'>${value}</text>`);
+const COIN_TYPES = [
+  { value: 1, r: 15, color: '#ffd23f', svg: COIN_SVG },
+  { value: 2, r: 18, color: '#3ef0ff', svg: coinSvg('#1a8fa8', '#3ef0ff', '#d9fdff', 2, '#0b3a48') },
+  { value: 5, r: 20, color: '#b56cff', svg: coinSvg('#6a2fb0', '#b56cff', '#f0dcff', 5, '#ffffff') },
+  { value: 10, r: 23, color: '#ff5c8a', svg: coinSvg('#b0204e', '#ff5c8a', '#ffe0ea', 10, '#ffffff') },
+];
+COIN_TYPES.forEach(t => t.sprite = sprite(t.svg, 112));
+// Chance per coin drop, rarest first.
+const RARE = [{ type: COIN_TYPES[3], chance: 0.01 }, { type: COIN_TYPES[2], chance: 0.03 }, { type: COIN_TYPES[1], chance: 0.08 }];
+function rollCoinType() {
+  let roll = Math.random();
+  for (const r of RARE) { if (roll < r.chance) return r.type; roll -= r.chance; }
+  return COIN_TYPES[0];
+}
 
 // ---------- Storage ----------
 const store = {
@@ -409,6 +423,12 @@ const sfx = (() => {
       const f = 988 * Math.pow(2, Math.min(streak, 12) / 12);
       tone(f, 0.07, { type: 'square', vol: 0.06 });
       tone(f * 1.335, 0.2, { type: 'square', vol: 0.06, at: 0.06 });
+    }),
+    // Rare coin: bright sparkle run, longer for bigger values.
+    rareCoin: value => play(() => {
+      const run = value >= 10 ? [1047, 1319, 1568, 2093, 2637, 3136] : value >= 5 ? [1047, 1319, 1568, 2093] : [1319, 1760, 2093];
+      notes(run, 'triangle', 0.13, 0.05);
+      tone(run[run.length - 1], 0.4, { type: 'sine', vol: 0.1, at: run.length * 0.05 });
     }),
     whoosh: () => play(() => noise(0.25, { vol: 0.18, from: 600, to: 2500, type: 'bandpass', q: 2 })),
     boom: () => play(() => {
@@ -544,21 +564,47 @@ canvas.addEventListener('mousemove', e => { if (e.buttons) dragMove(e); });
 canvas.addEventListener('mouseup', () => { dragX = null; });
 
 // ---------- Spawning ----------
+const CLEARANCE = 12;
+
+// Meteors and coins fall straight down at constant speeds, so we can tell at spawn time
+// whether a pair would ever touch on screen.
+function wouldCross(m, c) {
+  const reach = m.size / 2 + c.type.r + CLEARANCE;
+  if (Math.abs(m.x - c.x) >= reach) return false;
+  const gap = c.y - m.y;          // > 0: coin is below the meteor
+  if (Math.abs(gap) < reach) return true;
+  const closing = m.v - c.v;      // > 0: meteor is catching up from above
+  if ((gap > 0 && closing <= 0) || (gap < 0 && closing >= 0)) return false;
+  const t = (Math.abs(gap) - reach) / Math.abs(closing);
+  return c.y + c.v * t < H + 60;
+}
+
 function spawnMeteor(slow = 1) {
   const size = 30 + Math.random() * 38;
-  const kind = METEORS[Math.floor(Math.random() * METEORS.length)];
-  meteors.push({
-    x: size / 2 + Math.random() * (W - size), y: -size, size, kind,
+  const m = {
+    x: 0, y: -size, size,
+    kind: METEORS[Math.floor(Math.random() * METEORS.length)],
     v: (180 + elapsed * 12 + Math.random() * 120) * slow,
     rot: Math.random() * Math.PI, spin: (Math.random() - 0.5) * 3,
-  });
+  };
+  for (let i = 0; i < 12; i++) {
+    m.x = size / 2 + Math.random() * (W - size);
+    if (!coins.some(c => wouldCross(m, c))) { meteors.push(m); return true; }
+  }
+  return false;
 }
 
 function spawnCoins() {
-  const x = 30 + Math.random() * (W - 60);
-  // Sometimes a vertical line of coins, worth steering for.
-  const n = Math.random() < 0.35 ? 3 + Math.floor(Math.random() * 3) : 1;
-  for (let i = 0; i < n; i++) coins.push({ x, y: -30 - i * 46, v: 170 + elapsed * 6, phase: Math.random() * 6 });
+  const type = rollCoinType();
+  // Normal coins sometimes come as a vertical line, worth steering for. Rare coins come alone.
+  const n = type.value === 1 && Math.random() < 0.35 ? 3 + Math.floor(Math.random() * 3) : 1;
+  const v = 170 + elapsed * 6;
+  for (let i = 0; i < 12; i++) {
+    const x = 30 + Math.random() * (W - 60);
+    const line = Array.from({ length: n }, (_, k) => ({ x, y: -30 - k * 46, v, type, phase: Math.random() * 6 }));
+    if (!line.some(c => meteors.some(m => wouldCross(m, c)))) { coins.push(...line); return true; }
+  }
+  return false;
 }
 
 function burst(x, y, color, count, power) {
@@ -670,23 +716,35 @@ function update(dt) {
   if (player.trail.length > 7) player.trail.pop();
 
   spawnTimer -= dt;
-  if (spawnTimer <= 0) { spawnMeteor(); spawnTimer = Math.max(0.2, 0.85 - elapsed * 0.02); }
+  // No clear spot this frame: retry shortly instead of forcing an overlap.
+  if (spawnTimer <= 0) spawnTimer = spawnMeteor() ? Math.max(0.2, 0.85 - elapsed * 0.02) : 0.05;
   coinTimer -= dt;
-  if (coinTimer <= 0) { spawnCoins(); coinTimer = 1.2 + Math.random() * 1.2; }
+  if (coinTimer <= 0) coinTimer = spawnCoins() ? 1.2 + Math.random() * 1.2 : 0.2;
 
   for (const c of coins) {
     c.y += c.v * dt;
-    if (Math.hypot(player.x - c.x, player.y - c.y) < player.size * 0.5 + 14) {
+    // Safety net: a coin that ends up near a meteor slides out of its way.
+    for (const m of meteors) {
+      const reach = m.size / 2 + c.type.r + 6;
+      const dx = c.x - m.x;
+      if (Math.abs(dx) < reach && Math.abs(c.y - m.y) < reach) {
+        const dir = dx !== 0 ? Math.sign(dx) : (c.x < W / 2 ? 1 : -1);
+        c.x = Math.max(c.type.r, Math.min(W - c.type.r, c.x + dir * 260 * dt));
+      }
+    }
+    if (Math.hypot(player.x - c.x, player.y - c.y) < player.size * 0.5 + c.type.r - 1) {
       c.taken = true;
       coinStreak = time - lastCoinAt < 0.7 ? coinStreak + 1 : 0;
       lastCoinAt = time;
-      sfx.coin(coinStreak);
-      runCoins++;
-      bank++;
+      const val = c.type.value;
+      val > 1 ? sfx.rareCoin(val) : sfx.coin(coinStreak);
+      runCoins += val;
+      bank += val;
       store.set('coins', bank);
-      score += 5;
-      burst(c.x, c.y, '#ffd23f', 12, 160);
-      floaters.push({ x: c.x, y: c.y - 10, text: '+1', life: 1 });
+      score += 5 * val;
+      burst(c.x, c.y, c.type.color, val > 1 ? 30 + val * 3 : 12, val > 1 ? 260 : 160);
+      if (val > 1) burst(c.x, c.y, '#ffffff', 10, 200);
+      floaters.push({ x: c.x, y: c.y - 10, text: val > 1 ? `x${val}  +${val}` : '+1', life: 1, color: c.type.color, size: val > 1 ? 26 : 20 });
     }
   }
   coins = coins.filter(c => !c.taken && c.y < H + 40);
@@ -721,10 +779,17 @@ function drawMeteor(m) {
 }
 
 function drawCoin(c) {
-  drawGlow(c.x, c.y, '#ffd23f', 30, 30, 0.5);
-  // Fake 3D spin by squashing horizontally.
-  const sx = Math.max(0.15, Math.abs(Math.cos(time * 4 + c.phase)));
-  drawSprite(coinSprite, c.x, c.y, 30, 0, sx, 1);
+  const t = c.type, d = t.r * 2;
+  if (t.value > 1) {
+    // Rare coins pulse so they stand out; x10 pulses the most.
+    const pulse = 1 + Math.sin(time * 6 + c.phase) * 0.15 * Math.min(t.value, 5) / 5;
+    drawGlow(c.x, c.y, t.color, d * 1.6 * pulse, d * 1.6 * pulse, 0.8);
+  } else {
+    drawGlow(c.x, c.y, t.color, d, d, 0.5);
+  }
+  // Fake 3D spin by squashing horizontally; rare coins spin slower so the number is readable.
+  const sx = Math.max(0.15, Math.abs(Math.cos(time * (t.value > 1 ? 2 : 4) + c.phase)));
+  drawSprite(t.sprite, c.x, c.y, d, 0, sx, 1);
 }
 
 function drawPlayer() {
@@ -786,7 +851,7 @@ function draw() {
   ctx.globalCompositeOperation = 'source-over';
   for (const f of floaters) {
     ctx.globalAlpha = Math.max(0, f.life);
-    text(f.text, f.x, f.y, 20, '#ffd23f');
+    text(f.text, f.x, f.y, f.size || 20, f.color || '#ffd23f');
   }
   ctx.globalAlpha = 1;
   ctx.restore();
