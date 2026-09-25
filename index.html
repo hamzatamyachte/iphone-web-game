@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dodge">
+<meta name="theme-color" content="#0f121e">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<title>Dodge</title>
+<style>
+  html, body {
+    margin: 0; height: 100%; background: #0f121e; overflow: hidden;
+    touch-action: none; overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+  canvas { display: block; width: 100vw; height: 100dvh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H, DPR;
+
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+function loadBest() {
+  try { return Number(localStorage.getItem('dodge-best')) || 0; } catch { return 0; }
+}
+function saveBest(v) {
+  try { localStorage.setItem('dodge-best', v); } catch {}
+}
+
+const player = { x: 0, y: 0, w: 44, h: 44, targetX: 0 };
+let blocks, score, best = loadBest(), state = 'menu', spawnTimer, elapsed, last = 0;
+
+function reset() {
+  player.x = player.targetX = W / 2;
+  player.y = H - 120;
+  blocks = [];
+  score = 0;
+  spawnTimer = 0;
+  elapsed = 0;
+  state = 'play';
+}
+
+// Touch: drag anywhere, player follows finger horizontally.
+function pointer(e) {
+  const t = e.touches ? e.touches[0] : e;
+  if (t) player.targetX = t.clientX;
+}
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (state !== 'play') { reset(); }
+  pointer(e);
+}, { passive: false });
+canvas.addEventListener('touchmove', e => { e.preventDefault(); pointer(e); }, { passive: false });
+// Mouse for desktop testing.
+canvas.addEventListener('mousedown', e => { if (state !== 'play') reset(); pointer(e); });
+canvas.addEventListener('mousemove', e => { if (e.buttons) pointer(e); });
+
+function spawn() {
+  const size = 24 + Math.random() * 40;
+  const speed = 180 + elapsed * 12 + Math.random() * 120;
+  blocks.push({ x: Math.random() * (W - size), y: -size, w: size, h: size, v: speed });
+}
+
+function hit(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function update(dt) {
+  if (state !== 'play') return;
+  elapsed += dt;
+  score += dt * 10;
+
+  // Smooth follow toward finger.
+  player.x += (player.targetX - player.x) * Math.min(1, dt * 18);
+  player.x = Math.max(player.w / 2, Math.min(W - player.w / 2, player.x));
+  player.y = H - 120;
+
+  spawnTimer -= dt;
+  if (spawnTimer <= 0) {
+    spawn();
+    spawnTimer = Math.max(0.18, 0.8 - elapsed * 0.02);
+  }
+
+  const box = { x: player.x - player.w / 2, y: player.y - player.h / 2, w: player.w, h: player.h };
+  for (const b of blocks) {
+    b.y += b.v * dt;
+    if (hit(box, b)) {
+      state = 'over';
+      if (score > best) { best = Math.floor(score); saveBest(best); }
+    }
+  }
+  blocks = blocks.filter(b => b.y < H + 100);
+}
+
+function text(str, x, y, size, color = '#fff', align = 'center') {
+  ctx.fillStyle = color;
+  ctx.font = `600 ${size}px -apple-system, system-ui, sans-serif`;
+  ctx.textAlign = align;
+  ctx.fillText(str, x, y);
+}
+
+function draw() {
+  ctx.fillStyle = '#0f121e';
+  ctx.fillRect(0, 0, W, H);
+
+  if (state === 'menu') {
+    text('DODGE', W / 2, H / 2 - 40, 48, '#38dce6');
+    text('Drag to move. Avoid the blocks.', W / 2, H / 2 + 10, 17, '#aab');
+    text('Tap to start', W / 2, H / 2 + 60, 20);
+    if (best) text(`Best: ${best}`, W / 2, H / 2 + 100, 16, '#889');
+    return;
+  }
+
+  ctx.fillStyle = '#ff783c';
+  for (const b of blocks) ctx.fillRect(b.x, b.y, b.w, b.h);
+
+  ctx.fillStyle = '#38dce6';
+  ctx.fillRect(player.x - player.w / 2, player.y - player.h / 2, player.w, player.h);
+
+  // env(safe-area-inset-top) is not readable from canvas; 60px clears the notch.
+  text(Math.floor(score), W / 2, 70, 32);
+
+  if (state === 'over') {
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0, 0, W, H);
+    text('Game over', W / 2, H / 2 - 30, 40);
+    text(`Score: ${Math.floor(score)}   Best: ${best}`, W / 2, H / 2 + 15, 18, '#aab');
+    text('Tap to retry', W / 2, H / 2 + 60, 20, '#38dce6');
+  }
+}
+
+function loop(t) {
+  const dt = Math.min(0.05, (t - last) / 1000 || 0);
+  last = t;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// Offline support. Only registers over https or localhost.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
