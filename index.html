@@ -418,8 +418,6 @@ function die() {
   flash = 1;
   burst(player.x, player.y, animal().color, 50, 420);
   burst(player.x, player.y, '#ffffff', 20, 250);
-  bank += runCoins;
-  store.set('coins', bank);
   if (Math.floor(score) > best) {
     best = Math.floor(score);
     newBest = true;
@@ -503,6 +501,8 @@ function update(dt) {
     if (Math.hypot(player.x - c.x, player.y - c.y) < player.size * 0.5 + 14) {
       c.taken = true;
       runCoins++;
+      bank++;
+      store.set('coins', bank);
       score += 5;
       burst(c.x, c.y, '#ffd23f', 12, 160);
       floaters.push({ x: c.x, y: c.y - 10, text: '+1', life: 1 });
@@ -642,7 +642,7 @@ let hudScore = -1, hudCoins = -1;
 function updateHud(force) {
   const s = Math.floor(score);
   if (force || s !== hudScore) { hudScore = s; $('score').textContent = s; }
-  if (force || runCoins !== hudCoins) { hudCoins = runCoins; $('hudCoins').textContent = runCoins; }
+  if (force || bank !== hudCoins) { hudCoins = bank; $('hudCoins').textContent = bank; }
 }
 
 function refreshMenu() {
