@@ -8,7 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dodge">
 <meta name="theme-color" content="#0b0b1a">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="manifest" href="manifest.json">
 <title>Dodge</title>
 <style>
@@ -42,6 +43,7 @@
     padding: calc(var(--st) + 16px) 20px calc(var(--sb) + 16px);
     opacity: 0; pointer-events: none; transition: opacity 0.25s;
   }
+  .screen { z-index: 5; }
   .screen.show { opacity: 1; pointer-events: auto; }
   .screen.dim { background: rgba(8, 8, 20, 0.6); }
   .topbar { position: absolute; top: calc(var(--st) + 14px); left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; }
@@ -77,6 +79,47 @@
   .label { font: 800 14px/1 var(--font); letter-spacing: 2px; color: var(--dim); }
   .big { font: 900 72px/1 var(--font); }
   .badge { background: var(--gold); color: var(--bg); font: 900 13px/1 var(--font); padding: 7px 14px; border-radius: 99px; }
+  .install {
+    position: absolute; bottom: calc(var(--sb) + 18px); left: 16px; right: 16px; display: none;
+    background: rgba(62, 240, 255, 0.1); border: 1px solid rgba(62, 240, 255, 0.35); border-radius: 16px;
+    padding: 12px 14px; font: 600 14px/1.4 var(--font); color: var(--text); text-align: center;
+  }
+  .install.show { display: block; }
+  .install b { color: var(--cyan); }
+  .iconBtn {
+    width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
+    background: rgba(255, 255, 255, 0.09); display: flex; align-items: center; justify-content: center;
+  }
+  .iconBtn:active, .playBig:active { transform: scale(0.92); }
+  .playBig {
+    width: 96px; height: 96px; border-radius: 50%; border: 0; cursor: pointer; margin: 4px 0 6px;
+    background: var(--cyan); display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 36px rgba(62, 240, 255, 0.55); animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  /* Settings. */
+  .setting { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; font: 700 16px/1.2 var(--font); }
+  .setting.col { flex-direction: column; align-items: stretch; }
+  .setting + .setting { border-top: 1px solid rgba(255, 255, 255, 0.07); padding-top: 14px; }
+  .switch {
+    width: 54px; height: 32px; border-radius: 99px; border: 0; padding: 0; cursor: pointer; position: relative;
+    background: rgba(255, 255, 255, 0.15); transition: background 0.2s; flex: none;
+  }
+  .switch::after {
+    content: ''; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
+    background: #fff; transition: transform 0.2s;
+  }
+  .switch.on { background: var(--cyan); }
+  .switch.on::after { transform: translateX(22px); }
+  .seg { display: flex; background: rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 3px; }
+  .seg button {
+    flex: 1; border: 0; background: none; color: var(--dim); padding: 9px 0; border-radius: 9px; cursor: pointer;
+    font: 700 14px/1 var(--font);
+  }
+  .seg button.on { background: var(--cyan); color: var(--bg); }
+  .danger { color: var(--pink) !important; }
+  .danger.armed { background: var(--pink) !important; color: #fff !important; }
+  .version { color: var(--dim); font: 600 12px/1 var(--font); opacity: 0.6; }
   .hint { color: var(--cyan); font: 700 14px/1.3 var(--font); text-align: center; }
   .row { display: flex; gap: 18px; align-items: center; }
 
@@ -102,7 +145,11 @@
     display: flex; justify-content: space-between; align-items: center; pointer-events: none;
     opacity: 0; transition: opacity 0.2s;
   }
+  #hud { z-index: 10; }
   #hud.show { opacity: 1; }
+  #hud .icoPlay, #hud.paused .icoPause { display: none; }
+  #hud.paused .icoPlay { display: block; }
+  #hud.paused #pauseBtn { background: var(--cyan); box-shadow: 0 0 20px rgba(62, 240, 255, 0.6); }
   #score { position: absolute; left: 50%; transform: translateX(-50%); font: 900 40px/1 var(--font); text-shadow: 0 0 20px rgba(62, 240, 255, 0.5); }
   #pauseBtn {
     pointer-events: auto; width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer;
@@ -118,18 +165,20 @@
   <div class="pill"><span class="coinIcon"></span><span id="hudCoins">0</span></div>
   <div id="score">0</div>
   <button id="pauseBtn" aria-label="Pause">
-    <svg width="18" height="20" viewBox="0 0 18 20"><rect x="1" width="6" height="20" rx="2" fill="#fff"/><rect x="11" width="6" height="20" rx="2" fill="#fff"/></svg>
+    <svg class="icoPause" width="18" height="20" viewBox="0 0 18 20"><rect x="1" width="6" height="20" rx="2" fill="#fff"/><rect x="11" width="6" height="20" rx="2" fill="#fff"/></svg>
+    <svg class="icoPlay" width="20" height="22" viewBox="0 0 20 22"><path d="M3 2.5 Q3 0.5 5 1.6 L18.5 9.4 Q20 10.3 18.5 11.2 L5 20.4 Q3 21.5 3 19.5Z" fill="#0b0b1a"/></svg>
   </button>
 </div>
 
 <div class="screen" id="menu">
-  <div class="topbar"><button class="btn ghost small soundBtn"></button><div class="pill"><span class="coinIcon"></span><span id="menuCoins">0</span></div></div>
+  <div class="topbar"><button class="iconBtn" id="settingsBtn" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><div class="pill"><span class="coinIcon"></span><span id="menuCoins">0</span></div></div>
   <div class="hero" id="hero"></div>
   <h1 class="title">DODGE</h1>
   <p class="sub">Drag anywhere to move.<br>Dodge meteors, grab coins.</p>
   <button class="btn pulse" id="playBtn">PLAY</button>
   <button class="btn ghost" id="animalsBtn">ANIMALS</button>
   <p class="sub" id="menuBest"></p>
+  <div class="install" id="install">Play it like an app: tap <b>Share</b> &rarr; <b>Add to Home Screen</b>, keep <b>Open as Web App</b> on, then open it from the icon.</div>
 </div>
 
 <div class="screen dim" id="animals">
@@ -143,10 +192,25 @@
   <div class="card">
     <div class="label">PAUSED</div>
     <div class="big" id="pauseScore">0</div>
-    <button class="btn" id="resumeBtn">RESUME</button>
+    <button class="playBig" id="resumeBtn" aria-label="Resume">
+      <svg width="38" height="42" viewBox="0 0 20 22"><path d="M3 2.5 Q3 0.5 5 1.6 L18.5 9.4 Q20 10.3 18.5 11.2 L5 20.4 Q3 21.5 3 19.5Z" fill="#0b0b1a"/></svg>
+    </button>
     <button class="btn ghost" id="restartBtn">RESTART</button>
+    <button class="btn ghost" id="pauseSettingsBtn">SETTINGS</button>
     <button class="btn ghost" id="pauseHomeBtn">HOME</button>
-    <button class="btn ghost small soundBtn"></button>
+  </div>
+</div>
+
+<div class="screen dim" id="settings">
+  <div class="card">
+    <div class="label">SETTINGS</div>
+    <div class="setting"><span>Sound effects</span><button class="switch" id="soundSwitch" role="switch" aria-label="Sound effects"></button></div>
+    <div class="setting col"><span>Control speed</span>
+      <div class="seg" id="sensSeg"><button data-v="1">Slow</button><button data-v="1.3">Normal</button><button data-v="1.7">Fast</button></div>
+    </div>
+    <div class="setting"><span>Reset progress</span><button class="btn ghost small danger" id="resetBtn">Reset</button></div>
+    <button class="btn" id="settingsDone">DONE</button>
+    <div class="version">Dodge v7</div>
   </div>
 </div>
 
@@ -424,6 +488,7 @@ let state = 'menu', score = 0, runCoins = 0, newBest = false;
 let spawnTimer = 0, coinTimer = 0, elapsed = 0, last = 0, time = 0;
 let shake = 0, flash = 0, countdown = 0, overTimer = 0, overShown = false;
 let dragX = null;
+let sensitivity = Number(store.get('sens', 1.3)) || 1.3;
 let coinStreak = 0, lastCoinAt = -9, lastBeep = 0;
 
 function playerY() { return H - 120 - safeBottom; }
@@ -449,7 +514,7 @@ function dragMove(e) {
   if (state !== 'play' || dragX === null) return;
   const x = fingerX(e);
   if (x === null) return;
-  player.targetX = Math.max(player.size / 2, Math.min(W - player.size / 2, player.targetX + (x - dragX) * 1.3));
+  player.targetX = Math.max(player.size / 2, Math.min(W - player.size / 2, player.targetX + (x - dragX) * sensitivity));
   dragX = x;
 }
 canvas.addEventListener('touchstart', e => { e.preventDefault(); dragStart(e); }, { passive: false });
@@ -735,6 +800,7 @@ document.querySelectorAll('.coinIcon').forEach(el => el.innerHTML = COIN_SVG);
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('show', s.id === id));
   $('hud').classList.toggle('show', ['play', 'paused', 'countdown'].includes(state));
+  $('hud').classList.toggle('paused', state === 'paused');
 }
 
 let hudScore = -1, hudCoins = -1;
@@ -780,18 +846,65 @@ function renderGrid() {
   }
 }
 
-function renderSound() {
-  document.querySelectorAll('.soundBtn').forEach(b => b.textContent = sfx.muted ? '🔇 Sound off' : '🔊 Sound on');
+// ---------- Settings ----------
+let settingsFrom = 'menu', resetArmed = null;
+function renderSettings() {
+  $('soundSwitch').classList.toggle('on', !sfx.muted);
+  $('soundSwitch').setAttribute('aria-checked', String(!sfx.muted));
+  $('sensSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', Number(b.dataset.v) === sensitivity));
 }
-document.querySelectorAll('.soundBtn').forEach(b => b.addEventListener('click', () => { sfx.toggle(); renderSound(); sfx.tap(); }));
-renderSound();
+function openSettings() {
+  settingsFrom = state === 'paused' ? 'pause' : 'menu';
+  renderSettings();
+  show('settings');
+}
+function closeSettings() {
+  disarmReset();
+  if (settingsFrom === 'pause') { show('pause'); } else { refreshMenu(); show('menu'); }
+}
+function disarmReset() {
+  clearTimeout(resetArmed);
+  resetArmed = null;
+  $('resetBtn').classList.remove('armed');
+  $('resetBtn').textContent = 'Reset';
+}
+$('soundSwitch').onclick = () => { sfx.toggle(); renderSettings(); sfx.tap(); };
+$('sensSeg').querySelectorAll('button').forEach(b => b.onclick = () => {
+  sensitivity = Number(b.dataset.v);
+  store.set('sens', sensitivity);
+  renderSettings();
+  sfx.tap();
+});
+// Two taps to reset, so a stray tap never wipes coins and animals.
+$('resetBtn').onclick = () => {
+  if (!resetArmed) {
+    sfx.nope();
+    $('resetBtn').classList.add('armed');
+    $('resetBtn').textContent = 'Tap again';
+    resetArmed = setTimeout(disarmReset, 3000);
+    return;
+  }
+  best = 0; bank = 0; owned = ['fox']; selected = 'fox';
+  store.set('best', best); store.set('coins', bank); store.set('owned', owned); store.set('selected', selected);
+  disarmReset();
+  refreshMenu();
+  sfx.pause();
+};
+$('settingsBtn').onclick = openSettings;
+$('pauseSettingsBtn').onclick = openSettings;
+$('settingsDone').onclick = closeSettings;
+
+// Show the install tip only when running in the browser, not from the Home Screen icon.
+const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches;
+const touchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+$('install').classList.toggle('show', !standalone && touchDevice);
 // Soft click on menu buttons (not the ones that already have their own sound).
-['animalsBtn', 'backBtn', 'restartBtn', 'pauseHomeBtn', 'overHomeBtn', 'resumeBtn'].forEach(id => $(id).addEventListener('click', sfx.tap));
+['animalsBtn', 'backBtn', 'restartBtn', 'pauseHomeBtn', 'overHomeBtn', 'resumeBtn', 'settingsBtn', 'pauseSettingsBtn', 'settingsDone'].forEach(id => $(id).addEventListener('click', sfx.tap));
 
 $('playBtn').onclick = newGame;
 $('animalsBtn').onclick = () => { state = 'animals'; renderGrid(); refreshMenu(); show('animals'); };
 $('backBtn').onclick = () => { state = 'menu'; show('menu'); };
-$('pauseBtn').onclick = pause;
+$('pauseBtn').onclick = () => state === 'paused' ? resume() : pause();
 $('resumeBtn').onclick = resume;
 $('restartBtn').onclick = newGame;
 $('pauseHomeBtn').onclick = goHome;
